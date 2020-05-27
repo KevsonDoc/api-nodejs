@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const authConfig = require('../config/auth.json');
+const authConfig = require('../../config/auth.json');
 
 module.exports = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
     if (!authHeader)
         return res.status(401).send({ erro: 'No token provided' });
 
-    const parts = authHeader.split('');
+    const parts = authHeader.split(' ');
 
     if (!parts.length === 2)
         return res.status(401).send({ error: 'Token error' });
@@ -20,7 +20,7 @@ module.exports = (req, res, next) => {
     jwt.verify(token, authConfig.secret, (err, decoded) => {
         if (err) return res.status(401).send({ error: 'Token Invalid' });
 
-        req.user.Id = decoded.id;
+        req.userId = decoded.id;
         return next();
     })
 }
