@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authConfig = require('../../config/auth.json');
 const crypto = require('crypto');
+const mailer = require('../../mudules/mailer');
 
 const router = express.Router();
 
@@ -37,7 +38,7 @@ router.post('/register', async(req, res) => { //Rota de registro
     }
 });
 
-/*==================================== | AUTENTICAÇÃO | ==============================================*/
+/*==================================== | AUTENTICAÇÃO | ==========================================*/
 
 router.post('/authenticate', async(req, res) => {
     const { email, password } = req.body;
@@ -54,6 +55,8 @@ router.post('/authenticate', async(req, res) => {
         token: generateToken({ id: user.id }),
     });
 });
+
+/*================================= | RECUPERAÇÃO DE SENHA| =======================================*/
 
 router.post('/forgot_password', async(req, res) => {
     const { email } = req.body;
@@ -74,11 +77,19 @@ router.post('/forgot_password', async(req, res) => {
             passwordResetExpires: now
         });
 
-        return res.send({ ok: token, now });
-
-        console.log(token, now);
+        mailer.sendMail({
+            to: email,
+            from: 'kevsonfilipesantos@gmail.com',
+            template: 'forgot_password',
+            context: { token },
+        }, (err) => {
+            if (err)
+                return res.status(400).send({ error: 'Cannot send forgot passsword email' }), console.log(err);
+            res.send();
+        })
 
     } catch (err) {
+        console.log(err)
         res.status(400).send({ error: 'Erro on forgot password, try again' });
     }
 });
