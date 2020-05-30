@@ -80,8 +80,8 @@ router.post('/forgot_password', async(req, res) => {
         mailer.sendMail({
             to: email,
             from: 'kevsonfilipesantos@gmail.com',
-            template: 'forgot_password',
-            context: { token },
+            subject: 'Message title',
+            html: `<p>Use esse token ${token}</p>`,
         }, (err) => {
             if (err)
                 return res.status(400).send({ error: 'Cannot send forgot passsword email' }), console.log(err);
