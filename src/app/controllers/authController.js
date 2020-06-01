@@ -33,7 +33,6 @@ router.post('/register', async(req, res) => { //Rota de registro
             token: generateToken({ id: user.id }),
         });
     } catch (err) {
-        console.log(err);
         return res.status(400).send({ error: 'Registration falied' });
     }
 });
@@ -72,25 +71,58 @@ router.post('/forgot_password', async(req, res) => {
         const now = new Date();
         now.setHours(now.getHours() + 1);
 
-        await User.findByIdAndUpdate(User.id, {
-            passwordResetToken: token,
-            passwordResetExpires: now
+        await User.findByIdAndUpdate(user.id, {
+            '$set': {
+                passwordResetToken: token,
+                passwordResetExpires: now,
+            }
         });
 
         mailer.sendMail({
             to: email,
             from: 'kevsonfilipesantos@gmail.com',
             subject: 'Message title',
-            html: `<p>Use esse token ${token}</p>`,
+            html: `<p style="color: blue;">Use esse token { ${token} }</p>`,
         }, (err) => {
             if (err)
-                return res.status(400).send({ error: 'Cannot send forgot passsword email' }), console.log(err);
+                return res.status(400).send({ error: 'Cannot send forgot passsword email' })
             res.send();
         })
 
     } catch (err) {
-        console.log(err)
         res.status(400).send({ error: 'Erro on forgot password, try again' });
+    }
+});
+
+/*================================= | RESET PASSWORD| =======================================*/
+
+router.post('/reset_password', async(req, res) => {
+    const { email, token, newPasssword } = req.body;
+    try {
+        const user = await User.findOne({ email })
+            .select('+passwordResetToken passwordResetExpires');
+
+        if (!user) {
+            return res.status(400).send({ error: 'User not found' });
+        }
+
+        if (token !== user.passwordResetToken) {
+            return res.status(400).send({ error: 'token invalid' });
+        }
+
+        const now = new Date();
+
+        if (now > user.passwordResetExpires) {
+            return res.status(400).send({ error: 'token expired, generate a new one' });
+        }
+
+        user.password = newPasssword;
+
+        await user.save();
+        res.send();
+    } catch (err) {
+        console.log(err)
+        res.status(400).send({ error: 'Cannot reset password, try again' });
     }
 });
 
