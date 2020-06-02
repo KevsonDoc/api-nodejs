@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const url = 'mongodb+srv://APIdb:20027477FLa@api-w0vfx.gcp.mongodb.net/test?retryWrites=true&w=majority';
+const urlMongo = require('../config/configDb.json')
+const url = urlMongo.linkMongoDb;
 
 mongoose.connect(url, { useUnifiedTopology: true });
 console.log('funfando');

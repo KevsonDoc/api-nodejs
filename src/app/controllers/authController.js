@@ -80,7 +80,7 @@ router.post('/forgot_password', async(req, res) => {
 
         mailer.sendMail({
             to: email,
-            from: 'kevsonfilipesantos@gmail.com',
+            from: 'email@exaple.com',
             subject: 'Message title',
             html: `<p style="color: blue;">Use esse token { ${token} }</p>`,
         }, (err) => {
