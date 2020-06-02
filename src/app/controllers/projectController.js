@@ -1,7 +1,6 @@
 const express = require('express');
 const authMiddleware = require('../middlewares/auth');
 const Project = require('../models/project');
-const Task = require('../models/task');
 
 const router = express.Router();
 
@@ -28,9 +27,10 @@ router.get('/:projectId', async(req, res) => {
 
 router.post('/', async(req, res) => {
     try {
-        const project = await Project.create({...req.body, user: req.userId });
+        const { title, description } = req.body
+        const project = await Project.create({ title, description, user: req.userId });
 
-
+        await project.save();
 
         return res.send({ project });
     } catch (err) {
@@ -40,7 +40,20 @@ router.post('/', async(req, res) => {
 });
 
 router.put('/:projectId', async(req, res) => {
-    res.send({ user: req.userId });
+    try {
+        const { title, description } = req.body
+        const project = await Project.findOneAndUpdate(req.params.projectId, {
+            title,
+            description,
+        }, { new: true });
+
+        await project.save();
+
+        return res.send({ project });
+    } catch (err) {
+        console.log(err)
+        res.status(400).send({ error: 'Error creating new project' });
+    }
 });
 
 
